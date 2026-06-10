@@ -14,7 +14,7 @@ func joinQuoted(items []string, quote func(string) string) string {
 	for i, item := range items {
 		quoted[i] = quote(item)
 	}
-	return strings.Join(quoted, ", ")
+	return joinStrings(quoted, ", ")
 }
 
 func joinStrings(items []string, sep string) string {

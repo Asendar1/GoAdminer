@@ -196,19 +196,19 @@ func (d *SQLiteDriver) indexColumns(db *sql.DB, schema, indexName string) ([]str
 	return cols, rows.Err()
 }
 
-func (d *SQLiteDriver) CountRows(db *sql.DB, schema, table string, where string) (int, error) {
+func (d *SQLiteDriver) CountRows(db *sql.DB, schema, table string, where string, args []any) (int, error) {
 	q := fmt.Sprintf("SELECT COUNT(*) FROM %s", d.QuoteIdent(table))
 	if where != "" {
 		q += " WHERE " + where
 	}
 	var count int
-	if err := db.QueryRow(q).Scan(&count); err != nil {
+	if err := db.QueryRow(q, args...).Scan(&count); err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (d *SQLiteDriver) SelectRows(db *sql.DB, schema, table string, columns []string, where string, order string, limit, offset int) ([]map[string]any, error) {
+func (d *SQLiteDriver) SelectRows(db *sql.DB, schema, table string, columns []string, where string, args []any, order string, limit, offset int) ([]map[string]any, error) {
 	selCols := "*"
 	if len(columns) > 0 {
 		selCols = joinQuoted(columns, d.QuoteIdent)
@@ -226,7 +226,7 @@ func (d *SQLiteDriver) SelectRows(db *sql.DB, schema, table string, columns []st
 	if offset > 0 {
 		q += fmt.Sprintf(" OFFSET %d", offset)
 	}
-	return queryRows(db, q)
+	return queryRows(db, q, args...)
 }
 
 func (d *SQLiteDriver) Insert(db *sql.DB, schema, table string, data map[string]any) (map[string]any, error) {

@@ -16,6 +16,7 @@ type ConnConfig struct {
 	Database string     `json:"database,omitempty"`
 	FilePath string     `json:"filepath,omitempty"`
 	Schema   string     `json:"schema,omitempty"`
+	SSLMode  string     `json:"ssl_mode,omitempty"`
 }
 
 type TableInfo struct {
@@ -86,6 +87,7 @@ type ConnectRequest struct {
 	Password string `json:"password,omitempty"`
 	Database string `json:"database,omitempty"`
 	FilePath string `json:"filepath,omitempty"`
+	SSLMode  string `json:"ssl_mode,omitempty"`
 }
 
 type ConnectResponse struct {

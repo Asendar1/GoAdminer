@@ -16,8 +16,8 @@ type Driver interface {
 	ForeignKeys(db *sql.DB, schema, table string) ([]model.ForeignKey, error)
 	Indexes(db *sql.DB, schema, table string) ([]model.Index, error)
 
-	CountRows(db *sql.DB, schema, table string, where string) (int, error)
-	SelectRows(db *sql.DB, schema, table string, columns []string, where string, order string, limit, offset int) ([]map[string]any, error)
+	CountRows(db *sql.DB, schema, table string, where string, args []any) (int, error)
+	SelectRows(db *sql.DB, schema, table string, columns []string, where string, args []any, order string, limit, offset int) ([]map[string]any, error)
 	Insert(db *sql.DB, schema, table string, data map[string]any) (map[string]any, error)
 	Update(db *sql.DB, schema, table string, data map[string]any, pk map[string]any) error
 	Delete(db *sql.DB, schema, table string, pk map[string]any) error
