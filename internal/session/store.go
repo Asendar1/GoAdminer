@@ -7,37 +7,50 @@ import (
 	"sync"
 )
 
+type Session struct {
+	DB	*sql.DB
+	Driver string
+	DBname string
+	schema string
+}
+
 type Store struct {
 	mu    sync.RWMutex
-	sessions map[string]*sql.DB
+	sessions map[string] *Session
 }
 
 func NewStore() *Store {
 	return &Store{
-		sessions: make(map[string]*sql.DB),
+		sessions: make(map[string]*Session),
 	}
 }
 
-func (s *Store) New(db *sql.DB) string {
+func (s *Store) New(db *sql.DB, driver, dbname, schema string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	session := &Session{
+		DB: db,
+		Driver: driver,
+		DBname: dbname,
+		schema: schema,
+	}
 	id := generateID()
-	s.sessions[id] = db
+	s.sessions[id] = session
 	return id
 }
 
-func (s *Store) Get(id string) (*sql.DB, bool) {
+func (s *Store) Get(id string) (*Session, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	db, ok := s.sessions[id]
-	return db, ok
+	session, ok := s.sessions[id]
+	return session, ok
 }
 
 func (s *Store) Delete(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if db, ok := s.sessions[id]; ok {
-		db.Close()
+	if session, ok := s.sessions[id]; ok {
+		session.DB.Close()
 		delete(s.sessions, id)
 	}
 }

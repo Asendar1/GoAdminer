@@ -88,6 +88,7 @@ type ConnectRequest struct {
 	Database string `json:"database,omitempty"`
 	FilePath string `json:"filepath,omitempty"`
 	SSLMode  string `json:"ssl_mode,omitempty"`
+	Schema	 string `json:"schema,omitempty"`
 }
 
 type ConnectResponse struct {

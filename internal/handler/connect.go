@@ -34,6 +34,7 @@ func (h *Handler) Connect(w http.ResponseWriter, r *http.Request) {
 		Password: req.Password,
 		Database: req.Database,
 		FilePath: req.FilePath,
+		Schema: req.Schema,
 		SSLMode: req.SSLMode,
 	}
 
@@ -53,7 +54,7 @@ func (h *Handler) Connect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionID := h.Sessions.New(conn)
+	sessionID := h.Sessions.New(conn, req.Driver, req.Database, req.Schema)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(model.ConnectResponse{SessionID: sessionID, Driver: req.Driver})
@@ -72,7 +73,7 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := conn.Ping()
+	err := conn.DB.Ping()
 	if err != nil {
 		http.Error(w, "database connection error: " + err.Error(), http.StatusInternalServerError)
 		return
