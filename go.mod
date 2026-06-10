@@ -1,4 +1,4 @@
-module goadminer
+module github.com/Asendar1/GoAdminer
 
 go 1.26
 

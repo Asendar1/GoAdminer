@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"goadminer/internal/handler"
-	"goadminer/internal/session"
+	"github.com/Asendar1/GoAdminer/internal/handler"
+	"github.com/Asendar1/GoAdminer/internal/session"
 )
 
 func New(h *handler.Handler, webFS *embed.FS, devMode bool) http.Handler {

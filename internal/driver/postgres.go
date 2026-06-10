@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"goadminer/internal/model"
+	"github.com/Asendar1/GoAdminer/internal/model"
 )
 
 type PostgresDriver struct{}

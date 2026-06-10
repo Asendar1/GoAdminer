@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"goadminer/internal/model"
+	"github.com/Asendar1/GoAdminer/internal/model"
 )
 
 func (h *Handler) Connect(w http.ResponseWriter, r *http.Request) {

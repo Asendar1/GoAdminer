@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"goadminer/internal/model"
+	"github.com/Asendar1/GoAdminer/internal/model"
 )
 
 type SQLiteDriver struct{}

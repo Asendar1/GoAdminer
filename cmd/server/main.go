@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"goadminer"
-	"goadminer/internal/handler"
-	"goadminer/internal/server"
-	"goadminer/internal/session"
+	goadminer "github.com/Asendar1/GoAdminer"
+	"github.com/Asendar1/GoAdminer/internal/handler"
+	"github.com/Asendar1/GoAdminer/internal/server"
+	"github.com/Asendar1/GoAdminer/internal/session"
 )
 
 func main() {

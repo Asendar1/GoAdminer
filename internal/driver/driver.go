@@ -3,7 +3,7 @@ package driver
 import (
 	"database/sql"
 
-	"goadminer/internal/model"
+	"github.com/Asendar1/GoAdminer/internal/model"
 )
 
 type Driver interface {

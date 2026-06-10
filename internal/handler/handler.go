@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"goadminer/internal/driver"
-	"goadminer/internal/session"
+	"github.com/Asendar1/GoAdminer/internal/driver"
+	"github.com/Asendar1/GoAdminer/internal/session"
 )
 
 type Handler struct {
