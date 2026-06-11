@@ -74,7 +74,7 @@ func returnsRows(sql string) bool {
 }
 
 func queryScanAll(rows *sql.Rows, columns []string) []map[string]any {
-	var result []map[string]any
+	result := make([]map[string]any, 0)
 	for rows.Next() {
 		values := make([]any, len(columns))
 		valuePtrs := make([]any, len(columns))

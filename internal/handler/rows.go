@@ -66,6 +66,10 @@ func (h *Handler) ListRows(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if rows == nil {
+		rows = []map[string]any{}
+	}
+
 	colNames := make([]string, len(columns))
 	for i, c := range columns {
 		colNames[i] = c.Name

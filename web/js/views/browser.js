@@ -91,11 +91,12 @@
 
       const res = await GoAdminer.api.listRows(table, params);
       totalRows = res.total || 0;
+      const safeRows = res.rows || [];
 
-      document.getElementById('row-count').textContent = res.rows.length + ' of ' + totalRows + ' rows';
+      document.getElementById('row-count').textContent = safeRows.length + ' of ' + totalRows + ' rows';
 
       if (res.columns && res.columns.length) {
-        renderTable(res.columns, res.rows, table);
+        renderTable(res.columns, safeRows, table);
       } else {
         wrap.innerHTML = '<div class="empty-state">No rows</div>';
       }
