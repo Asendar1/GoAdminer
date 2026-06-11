@@ -41,7 +41,7 @@
                 <label>
                   ${GoAdminer.escapeHtml(col.name)}
                   <span style="font-weight:400;color:var(--text-muted);font-size:11px">
-                    (${GoAdminer.escapeHtml(col.dataType)}${col.nullable ? ', nullable' : ''}${isPk ? ', PK' : ''})
+                    (${GoAdminer.escapeHtml(col.data_type)}${col.nullable ? ', nullable' : ''}${isPk ? ', PK' : ''})
                   </span>
                 </label>
                 ${renderInput(col, val, isEdit && isPk)}
@@ -110,7 +110,7 @@
       return `<input type="text" name="${name}" value="${GoAdminer.escapeHtml(strVal)}" readonly style="background:#f0f0f0">`;
     }
 
-    const dt = col.dataType.toLowerCase();
+    const dt = col.data_type.toLowerCase();
 
     if (dt.includes('bool')) {
       const checked = strVal === 'true' || strVal === '1' || strVal === 't';

@@ -82,7 +82,7 @@
 
           html += '</tbody></table>';
           result.innerHTML = html;
-          status.textContent = res.rows.length + ' row(s) returned in ' + (res.duration || '');
+          status.textContent = res.rows.length + ' row(s) returned';
         } else if (res.affected !== undefined) {
           status.textContent = res.affected + ' row(s) affected';
         } else {
