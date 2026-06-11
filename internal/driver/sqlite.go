@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Asendar1/GoAdminer/internal/model"
+	_ "modernc.org/sqlite"
 )
 
 type SQLiteDriver struct{}

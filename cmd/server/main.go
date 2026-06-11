@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	goadminer "github.com/Asendar1/GoAdminer"
 	"github.com/Asendar1/GoAdminer/internal/handler"
@@ -28,11 +32,30 @@ func main() {
 		srv = server.New(h, &goadminer.WebFS, false)
 	}
 
-	addr := ":" + *port
-	log.Printf("GoAdminer listening on %s", addr)
-
-	if err := http.ListenAndServe(addr, srv); err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+	httpSrv := &http.Server{
+		Addr:         ":" + *port,
+		Handler:      srv,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
+
+	go func() {
+		log.Printf("GoAdminer listening on %s", ":"+*port)
+		if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := httpSrv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
+	log.Println("Server exited")
 }

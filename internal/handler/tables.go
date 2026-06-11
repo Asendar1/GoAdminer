@@ -4,83 +4,91 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/Asendar1/GoAdminer/internal/model"
 )
 
 func (h *Handler) ListTables(w http.ResponseWriter, r *http.Request) {
-	schema := r.URL.Query().Get("schema")
-	if schema == "" {
-		schema = "public"
-	}
-
-	sessionID := r.Header.Get("X-Sesson-ID")
-
-	session, ok := h.Sessions.Get(sessionID)
-	if !ok {
-		http.Error(w, "invalid session ID", http.StatusBadRequest)
+	sess, err := h.getSession(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	tables, err := h.Drivers[session.Driver]().ListTables(session.DB, schema)
+	drv := h.getDriver(sess.Driver)
+	if drv == nil {
+		http.Error(w, "unknown driver", http.StatusInternalServerError)
+		return
+	}
+
+	schema := r.URL.Query().Get("schema")
+	if schema == "" {
+		schema = sess.Schema
+	}
+
+	tables, err := drv.ListTables(sess.DB, schema)
 	if err != nil {
-		http.Error(w, "failed to list tables", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(tables)
 }
 
 func (h *Handler) TableSchema(w http.ResponseWriter, r *http.Request) {
-	table := r.URL.Query().Get("table")
+	sess, err := h.getSession(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	drv := h.getDriver(sess.Driver)
+	if drv == nil {
+		http.Error(w, "unknown driver", http.StatusInternalServerError)
+		return
+	}
+
+	table := chi.URLParam(r, "table")
 	if table == "" {
 		http.Error(w, "missing table name", http.StatusBadRequest)
 		return
 	}
 
-	sessionID := r.Header.Get("X-Session-ID")
-	session, ok := h.Sessions.Get(sessionID)
-	if !ok {
-		http.Error(w, "invalid session ID", http.StatusBadRequest)
-		return
-	}
+	schema := sess.Schema
 
-	var rtn model.TableSchema
-	driver := h.Drivers[session.Driver]()
-	db := session.DB
-
-	cols, err := driver.TableColumns(db, session.Schema, table)
+	columns, err := drv.TableColumns(sess.DB, schema, table)
 	if err != nil {
-		http.Error(w, "Failed to get table schema", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	PKs, err := driver.PrimaryKeys(db, session.Schema, table)
+	pks, err := drv.PrimaryKeys(sess.DB, schema, table)
 	if err != nil {
-		http.Error(w, "Failed to get primary keys", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	FKs, err := driver.ForeignKeys(db, session.Schema, table)
+	fks, err := drv.ForeignKeys(sess.DB, schema, table)
 	if err != nil {
-		http.Error(w, "Failed to get foreign keys", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	idxs, err := driver.Indexes(db, session.Schema, table)
+	indexes, err := drv.Indexes(sess.DB, schema, table)
 	if err != nil {
-		http.Error(w, "Failed to get indexes", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	rtn.Columns = cols
-	rtn.PKs = PKs
-	rtn.FKs = FKs
-	rtn.Indexes = idxs
+	resp := model.TableSchema{
+		Columns: columns,
+		PKs:     pks,
+		FKs:     fks,
+		Indexes: indexes,
+	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(rtn)
-
+	json.NewEncoder(w).Encode(resp)
 }

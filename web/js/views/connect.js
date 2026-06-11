@@ -39,6 +39,21 @@
                 <input type="password" id="pg-password" placeholder="">
               </div>
             </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Schema</label>
+                <input type="text" id="pg-schema" value="public" placeholder="public">
+              </div>
+              <div class="form-group">
+                <label>SSL Mode</label>
+                <select id="pg-sslmode">
+                  <option value="disable">disable</option>
+                  <option value="require">require</option>
+                  <option value="verify-ca">verify-ca</option>
+                  <option value="verify-full">verify-full</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div id="sqlite-fields" style="display:none">
@@ -93,6 +108,8 @@
             user: document.getElementById('pg-user').value,
             password: document.getElementById('pg-password').value,
             database: document.getElementById('pg-database').value,
+            schema: document.getElementById('pg-schema').value || 'public',
+            ssl_mode: document.getElementById('pg-sslmode').value,
           };
         } else {
           cfg = {

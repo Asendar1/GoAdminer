@@ -9,7 +9,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/Asendar1/GoAdminer/internal/handler"
-	"github.com/Asendar1/GoAdminer/internal/session"
 )
 
 func New(h *handler.Handler, webFS *embed.FS, devMode bool) http.Handler {
@@ -64,6 +63,4 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func ensureStore() *session.Store {
-	return session.NewStore()
-}
+
