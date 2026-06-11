@@ -11,7 +11,7 @@ type Session struct {
 	DB	*sql.DB
 	Driver string
 	DBname string
-	schema string
+	Schema string
 }
 
 type Store struct {
@@ -32,7 +32,7 @@ func (s *Store) New(db *sql.DB, driver, dbname, schema string) string {
 		DB: db,
 		Driver: driver,
 		DBname: dbname,
-		schema: schema,
+		Schema: schema,
 	}
 	id := generateID()
 	s.sessions[id] = session

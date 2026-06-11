@@ -56,6 +56,7 @@ func (h *Handler) Connect(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := h.Sessions.New(conn, req.Driver, req.Database, req.Schema)
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(model.ConnectResponse{SessionID: sessionID, Driver: req.Driver})
 }
@@ -79,6 +80,7 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(model.StatusResponse{Connected: true})
 }
@@ -99,6 +101,7 @@ func (h *Handler) Disconnect(w http.ResponseWriter, r *http.Request) {
 	h.Sessions.Delete(sessionID)
 
 	// * Frontend deletes the cookie
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(model.StatusResponse{Connected: false})
 }
