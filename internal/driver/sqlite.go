@@ -89,6 +89,7 @@ func (d *SQLiteDriver) TableColumns(db *sql.DB, schema, table string) ([]model.C
 		c.Nullable = nullable == 1
 		c.Default = dflt
 		c.IsPK = pk == 1
+		c.AutoIncr = c.IsPK && strings.EqualFold(c.DataType, "INTEGER")
 		cols = append(cols, c)
 	}
 	if err := rows.Err(); err != nil {

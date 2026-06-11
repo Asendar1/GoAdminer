@@ -3,6 +3,7 @@ package driver
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/Asendar1/GoAdminer/internal/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -98,7 +99,8 @@ func (d *PostgresDriver) TableColumns(db *sql.DB, schema, table string) ([]model
 			c.column_default,
 			c.character_maximum_length,
 			c.numeric_precision,
-			c.numeric_scale
+			c.numeric_scale,
+			c.is_identity
 		FROM information_schema.columns c
 		WHERE c.table_schema = $1 AND c.table_name = $2
 		ORDER BY c.ordinal_position`, schema, table)
@@ -110,11 +112,13 @@ func (d *PostgresDriver) TableColumns(db *sql.DB, schema, table string) ([]model
 	for rows.Next() {
 		var c model.ColumnInfo
 		var nullable string
+		var isIdentity string
 		if err := rows.Scan(&c.Name, &c.DataType, &nullable, &c.Default,
-			&c.MaxLen, &c.NumericPrec, &c.NumericScale); err != nil {
+				&c.MaxLen, &c.NumericPrec, &c.NumericScale, &isIdentity); err != nil {
 			return nil, err
 		}
 		c.Nullable = nullable == "YES"
+		c.AutoIncr = isIdentity == "YES" || (c.Default != nil && strings.Contains(*c.Default, "nextval("))
 		cols = append(cols, c)
 	}
 	if err := rows.Err(); err != nil {

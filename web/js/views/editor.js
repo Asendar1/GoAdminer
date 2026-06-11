@@ -24,6 +24,22 @@
     }
   }
 
+  function isAutoField(col, isEdit) {
+    if (col.auto_increment) return true;
+    const name = col.name.toLowerCase();
+    if (name === 'created_at' || name === 'created' || name === 'updated_at' || name === 'updated') return true;
+    if (col.default !== null && !isEdit) return true;
+    return false;
+  }
+
+  function fieldTags(col) {
+    const tags = [];
+    if (col.is_pk) tags.push('PK');
+    if (col.is_fk) tags.push('FK → ' + col.fk_ref_table);
+    if (col.auto_increment || col.name.toLowerCase() === 'created_at' || col.name.toLowerCase() === 'created' || col.name.toLowerCase() === 'updated_at' || col.name.toLowerCase() === 'updated') tags.push('auto');
+    return tags;
+  }
+
   function renderForm(table, mode, rowData, schema) {
     const isEdit = mode === 'edit';
     const title = isEdit ? 'Edit Row' : 'New Row';
@@ -35,16 +51,17 @@
         <form id="row-form">
           ${schema.columns.map(col => {
             const val = isEdit ? (rowData[col.name] ?? '') : '';
-            const isPk = col.is_pk;
+            const readOnly = isAutoField(col, isEdit);
+            const tags = fieldTags(col);
             return `
               <div class="form-group">
                 <label>
                   ${GoAdminer.escapeHtml(col.name)}
                   <span style="font-weight:400;color:var(--text-muted);font-size:11px">
-                    (${GoAdminer.escapeHtml(col.data_type)}${col.nullable ? ', nullable' : ''}${isPk ? ', PK' : ''})
+                    (${GoAdminer.escapeHtml(col.data_type)}${col.nullable ? ', nullable' : ''}${tags.length ? ' | ' + tags.join(', ') : ''})
                   </span>
                 </label>
-                ${renderInput(col, val, isEdit && isPk)}
+                ${renderInput(col, val, readOnly)}
               </div>
             `;
           }).join('')}
@@ -107,7 +124,7 @@
     const strVal = val !== null && val !== undefined ? String(val) : '';
 
     if (readOnly) {
-      return `<input type="text" name="${name}" value="${GoAdminer.escapeHtml(strVal)}" readonly style="background:#f0f0f0">`;
+      return `<input type="text" name="${name}" value="${GoAdminer.escapeHtml(strVal)}" disabled style="background:#f0f0f0;color:var(--text-muted)">`;
     }
 
     const dt = col.data_type.toLowerCase();
