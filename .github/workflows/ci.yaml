@@ -40,7 +40,7 @@ jobs:
       run: go vet ./...
 
     - name: Build
-      run: go build -v -o goadminer ./cmd/goadminer
+      run: go build -v -o goadminer ./cmd/server/
 
     - name: Test (unit)
       run: go test -v ./...
