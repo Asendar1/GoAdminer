@@ -35,7 +35,7 @@
   function fieldTags(col) {
     const tags = [];
     if (col.is_pk) tags.push('PK');
-    if (col.is_fk) tags.push('FK → ' + col.fk_ref_table);
+    if (col.is_fk) tags.push('FK → ' + (col.fk_ref_table || '?'));
     if (col.auto_increment || col.name.toLowerCase() === 'created_at' || col.name.toLowerCase() === 'created' || col.name.toLowerCase() === 'updated_at' || col.name.toLowerCase() === 'updated') tags.push('auto');
     return tags;
   }

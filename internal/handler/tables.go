@@ -76,6 +76,18 @@ func (h *Handler) TableSchema(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fkCols := make(map[string]model.ForeignKey, len(fks))
+	for _, fk := range fks {
+		fkCols[fk.Column] = fk
+	}
+	for i := range columns {
+		if fk, ok := fkCols[columns[i].Name]; ok {
+			columns[i].IsFK = true
+			columns[i].FKRefTable = &fk.RefTable
+			columns[i].FKRefColumn = &fk.RefColumn
+		}
+	}
+
 	indexes, err := drv.Indexes(sess.DB, schema, table)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
