@@ -14,6 +14,15 @@
             <button data-driver="sqlite">SQLite</button>
           </div>
 
+          <div class="csv-upload">
+            <label>Config File</label>
+            <div class="csv-upload-zone">
+              <input type="file" id="csv-file" accept=".csv">
+              <span id="csv-filename">Upload a CSV config file</span>
+              <button id="btn-download-csv" class="btn btn-sm btn-outline" type="button">Download Config</button>
+            </div>
+          </div>
+
           <div id="pg-fields">
             <div class="form-row">
               <div class="form-group">
@@ -84,13 +93,97 @@
 
     toggleBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        toggleBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedDriver = btn.dataset.driver;
-        pgFields.style.display = selectedDriver === 'postgres' ? '' : 'none';
-        sqliteFields.style.display = selectedDriver === 'sqlite' ? '' : 'none';
-        errorEl.style.display = 'none';
+        switchDriver(btn.dataset.driver);
       });
+    });
+
+    function switchDriver(driver) {
+      toggleBtns.forEach(b => b.classList.remove('active'));
+      toggleBtns.forEach(b => { if (b.dataset.driver === driver) b.classList.add('active'); });
+      selectedDriver = driver;
+      pgFields.style.display = selectedDriver === 'postgres' ? '' : 'none';
+      sqliteFields.style.display = selectedDriver === 'sqlite' ? '' : 'none';
+      errorEl.style.display = 'none';
+    }
+
+    const csvFileInput = document.getElementById('csv-file');
+    const csvFilename = document.getElementById('csv-filename');
+
+    csvFileInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      csvFilename.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const text = e.target.result;
+          const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          if (lines.length < 2) throw new Error('CSV must have a header row and a data row');
+          const headers = parseCSVLine(lines[0]);
+          const values = parseCSVLine(lines[1]);
+          if (headers.length !== values.length) throw new Error('Header/data column mismatch');
+          const cfg = {};
+          headers.forEach((h, i) => { cfg[h.toLowerCase().trim()] = values[i].trim(); });
+
+          if (cfg.driver === 'sqlite') {
+            switchDriver('sqlite');
+            if (cfg.filepath) document.getElementById('sqlite-path').value = cfg.filepath;
+          } else {
+            switchDriver('postgres');
+            if (cfg.host) document.getElementById('pg-host').value = cfg.host;
+            if (cfg.port) document.getElementById('pg-port').value = cfg.port;
+            if (cfg.database) document.getElementById('pg-database').value = cfg.database;
+            if (cfg.user) document.getElementById('pg-user').value = cfg.user;
+            if (cfg.password) {
+              try { document.getElementById('pg-password').value = atob(cfg.password); }
+              catch (_) { document.getElementById('pg-password').value = cfg.password; }
+            }
+            if (cfg.schema) document.getElementById('pg-schema').value = cfg.schema;
+            if (cfg.sslmode) document.getElementById('pg-sslmode').value = cfg.sslmode;
+          }
+          GoAdminer.showSuccess('Config loaded from ' + file.name);
+        } catch (err) {
+          GoAdminer.showError('CSV parse error: ' + err.message);
+          csvFilename.textContent = 'Upload a CSV config file';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('btn-download-csv').addEventListener('click', function() {
+      let fields, cols;
+      if (selectedDriver === 'postgres') {
+        cols = ['driver', 'host', 'port', 'database', 'user', 'password', 'schema', 'sslmode'];
+        fields = {
+          driver: 'postgres',
+          host: document.getElementById('pg-host').value,
+          port: document.getElementById('pg-port').value,
+          database: document.getElementById('pg-database').value,
+          user: document.getElementById('pg-user').value,
+          password: btoa(document.getElementById('pg-password').value),
+          schema: document.getElementById('pg-schema').value,
+          sslmode: document.getElementById('pg-sslmode').value,
+        };
+      } else {
+        cols = ['driver', 'filepath'];
+        fields = {
+          driver: 'sqlite',
+          filepath: document.getElementById('sqlite-path').value,
+        };
+      }
+      const csv = cols.join(',') + '\n' + cols.map(c => {
+        const v = fields[c] || '';
+        return v.includes(',') || v.includes('"') || v.includes('\n') ? '"' + v.replace(/"/g, '""') + '"' : v;
+      }).join(',');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'goadminer-config.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      GoAdminer.showSuccess('Config downloaded');
     });
 
     connectBtn.addEventListener('click', async () => {
@@ -134,6 +227,27 @@
         connectBtn.textContent = 'Connect';
       }
     });
+  }
+
+  function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+          else { inQuotes = false; }
+        } else { current += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === ',') { result.push(current); current = ''; }
+        else { current += ch; }
+      }
+    }
+    result.push(current);
+    return result;
   }
 
   GoAdminer.views = GoAdminer.views || {};

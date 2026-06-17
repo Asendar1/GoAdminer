@@ -318,6 +318,26 @@ table .actions button {
   color: var(--text-muted);
 }
 
+.csv-upload { margin-bottom: 14px; }
+.csv-upload label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.csv-upload-zone {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.csv-upload-zone input[type="file"] {
+  position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden;
+}
+.csv-upload-zone::before {
+  content: "\1F4C1"; margin-right: 4px; font-size: 16px;
+}
+.csv-upload-zone #csv-filename { flex: 1; }
+.csv-upload-zone .btn { flex-shrink: 0; }
+
 .driver-toggle {
   display: flex;
   gap: 0;
