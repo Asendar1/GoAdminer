@@ -109,6 +109,12 @@
     const csvFileInput = document.getElementById('csv-file');
     const csvFilename = document.getElementById('csv-filename');
 
+    document.querySelector('.csv-upload-zone').addEventListener('click', function(e) {
+      if (e.target.id !== 'btn-download-csv' && !e.target.closest('#btn-download-csv')) {
+        csvFileInput.click();
+      }
+    });
+
     csvFileInput.addEventListener('change', function() {
       const file = this.files[0];
       if (!file) return;
