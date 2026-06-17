@@ -124,6 +124,35 @@ func (d *PostgresDriver) TableColumns(db *sql.DB, schema, table string) ([]model
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
+	// Fetch element types for ARRAY columns from pg_catalog
+	elemRows, err := db.Query(`
+		SELECT a.attname, e.typname
+		FROM pg_catalog.pg_attribute a
+		JOIN pg_catalog.pg_type t ON t.oid = a.atttypid
+		JOIN pg_catalog.pg_type e ON e.oid = t.typelem
+		JOIN pg_catalog.pg_class c ON c.oid = a.attrelid
+		JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+		WHERE n.nspname = $1 AND c.relname = $2
+		  AND a.attnum > 0 AND NOT a.attisdropped
+		  AND t.typcategory = 'A'`, schema, table)
+	if err == nil {
+		defer elemRows.Close()
+		elemMap := make(map[string]string)
+		for elemRows.Next() {
+			var colName, elemType string
+			if err := elemRows.Scan(&colName, &elemType); err == nil {
+				elemMap[colName] = elemType
+			}
+		}
+		for i := range cols {
+			if et, ok := elemMap[cols[i].Name]; ok {
+				cols[i].ElementType = &et
+			}
+		}
+	}
+	// If the query fails (e.g. older PG), we just leave ElementType nil.
+
 	pks, err := d.PrimaryKeys(db, schema, table)
 	if err != nil {
 		return nil, err

@@ -2,7 +2,10 @@ package driver
 
 import (
 	"database/sql"
+	"encoding/json"
 	"strings"
+
+	"github.com/Asendar1/GoAdminer/internal/model"
 )
 
 func contains(s, substr string) bool {
@@ -53,6 +56,59 @@ func queryRows(db *sql.DB, query string, args ...any) ([]map[string]any, error) 
 		result = append(result, row)
 	}
 	return result, rows.Err()
+}
+
+func CoerceTypes(data map[string]any, columns []model.ColumnInfo) {
+	if data == nil {
+		return
+	}
+	for _, col := range columns {
+		val, ok := data[col.Name]
+		if !ok {
+			continue
+		}
+		if val == nil {
+			continue
+		}
+		switch col.DataType {
+		case "ARRAY":
+			switch v := val.(type) {
+			case string:
+				list := strings.Split(v, ",")
+				res := make([]string, 0, len(list))
+				for _, item := range list {
+					trimmed := strings.TrimSpace(item)
+					if trimmed != "" {
+						res = append(res, trimmed)
+					}
+				}
+				if len(res) == 1 && strings.HasPrefix(res[0], "[") {
+					var parsed []string
+					if json.Unmarshal([]byte(v), &parsed) == nil {
+						data[col.Name] = parsed
+						break
+					}
+				}
+				data[col.Name] = res
+			case []any:
+				res := make([]string, 0, len(v))
+				for _, item := range v {
+					if s, ok := item.(string); ok {
+						res = append(res, s)
+					}
+				}
+				data[col.Name] = res
+			}
+		case "jsonb", "json":
+			switch v := val.(type) {
+			case map[string]any, []any:
+				encoded, err := json.Marshal(v)
+				if err == nil {
+					data[col.Name] = string(encoded)
+				}
+			}
+		}
+	}
 }
 
 func scanRow(rows *sql.Rows) (map[string]any, error) {

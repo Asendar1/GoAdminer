@@ -29,6 +29,7 @@ type TableInfo struct {
 type ColumnInfo struct {
 	Name         string  `json:"name"`
 	DataType     string  `json:"data_type"`
+	ElementType  *string `json:"element_type,omitempty"`
 	Nullable     bool    `json:"nullable"`
 	Default      *string `json:"default"`
 	IsPK         bool    `json:"is_pk"`

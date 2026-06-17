@@ -112,6 +112,13 @@ func (h *Handler) InsertRow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	columns, err := drv.TableColumns(sess.DB, sess.Schema, table)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	driver.CoerceTypes(data, columns)
+
 	row, err := drv.Insert(sess.DB, sess.Schema, table, data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -150,6 +157,13 @@ func (h *Handler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
+
+	columns, err := drv.TableColumns(sess.DB, sess.Schema, table)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	driver.CoerceTypes(body.Data, columns)
 
 	if err := drv.Update(sess.DB, sess.Schema, table, body.Data, body.PK); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

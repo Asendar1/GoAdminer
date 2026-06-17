@@ -394,6 +394,11 @@ table .actions button {
   border-top: 1px solid var(--border);
 }
 
+.array-widget .btn-sm { line-height: 1; }
+.array-compact input { font-family: var(--mono); font-size: 13px; }
+.array-expanded { margin-top: 4px; }
+.array-items input { font-family: var(--mono); font-size: 13px; }
+
 @media (max-width: 768px) {
   .form-row { grid-template-columns: 1fr; }
   .modal { min-width: unset; width: 95%; }
