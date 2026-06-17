@@ -328,6 +328,7 @@ table .actions button {
   background: var(--bg);
   font-size: 13px;
   color: var(--text-muted);
+  cursor: pointer;
 }
 .csv-upload-zone input[type="file"] {
   position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden;

@@ -125,6 +125,7 @@
           const text = e.target.result;
           const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
           if (lines.length < 2) throw new Error('CSV must have a header row and a data row');
+          if (lines.length > 2) console.warn('CSV has ' + (lines.length - 1) + ' data rows; only the first is used');
           const headers = parseCSVLine(lines[0]);
           const values = parseCSVLine(lines[1]);
           if (headers.length !== values.length) throw new Error('Header/data column mismatch');
@@ -141,7 +142,7 @@
             if (cfg.database) document.getElementById('pg-database').value = cfg.database;
             if (cfg.user) document.getElementById('pg-user').value = cfg.user;
             if (cfg.password) {
-              try { document.getElementById('pg-password').value = atob(cfg.password); }
+              try { document.getElementById('pg-password').value = decodeURIComponent(escape(atob(cfg.password))); }
               catch (_) { document.getElementById('pg-password').value = cfg.password; }
             }
             if (cfg.schema) document.getElementById('pg-schema').value = cfg.schema;
@@ -166,7 +167,7 @@
           port: document.getElementById('pg-port').value,
           database: document.getElementById('pg-database').value,
           user: document.getElementById('pg-user').value,
-          password: btoa(document.getElementById('pg-password').value),
+          password: btoa(unescape(encodeURIComponent(document.getElementById('pg-password').value))),
           schema: document.getElementById('pg-schema').value,
           sslmode: document.getElementById('pg-sslmode').value,
         };
