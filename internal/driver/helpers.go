@@ -70,6 +70,10 @@ func CoerceTypes(data map[string]any, columns []model.ColumnInfo) {
 		if val == nil {
 			continue
 		}
+		if col.Nullable && val == "" {
+			data[col.Name] = nil
+			continue
+		}
 		switch col.DataType {
 		case "ARRAY":
 			switch v := val.(type) {
